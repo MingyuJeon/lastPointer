@@ -1,7 +1,14 @@
 {
   "name": "LastPointer",
   "publisher": "MinGyu-Jeon",
-  "repository": "https://github.com/MingyuJeon/lastPointer.git",
+  "homepage": "https://github.com/MingyuJeon/lastPointer/blob/main/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MingyuJeon/lastPointer"
+  },
+  "bugs": {
+    "url": "https://github.com/MingyuJeon/lastPointer/issues"
+  },
   "displayName": "Last Pointer",
   "description": "",
   "version": "0.1.1",
