@@ -5,6 +5,18 @@ let decorationType: vscode.TextEditorDecorationType | undefined;
 let minimapDecorationType: vscode.TextEditorDecorationType | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
+  if (vscode.window.activeTextEditor) {
+    setupListeners(vscode.window.activeTextEditor);
+  }
+
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) {
+        setupListeners(editor);
+      }
+    })
+  );
+
   let disposable = vscode.commands.registerCommand(
     "last-pointer.highlightPreviousPosition",
     () => {
@@ -24,25 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const onDidChangeTextEditorSelectionDisposable =
     vscode.window.onDidChangeTextEditorSelection((event) => {
-      const editor = event.textEditor;
-      if (editor && event.selections.length > 0) {
-        const currentPosition = event.selections[0].active;
-        if (
-          currentPosition &&
-          previousPositions.length > 0 &&
-          !currentPosition.isEqual(
-            previousPositions[previousPositions.length - 1]
-          )
-        ) {
-          const previousPosition =
-            previousPositions[previousPositions.length - 1];
-          const line = editor.document.lineAt(previousPosition.line);
-          highlightLine(editor, line);
-          previousPositions.push(currentPosition);
-        } else {
-          previousPositions = [currentPosition];
-        }
-      }
+      highlighter(event.textEditor, event);
     });
 
   context.subscriptions.push(
@@ -51,7 +45,34 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
-function highlightLine(editor: vscode.TextEditor, line: vscode.TextLine) {
+export const highlighter = (
+  editor: vscode.TextEditor,
+  event: vscode.TextEditorSelectionChangeEvent
+) => {
+  if (event.textEditor === editor && event.selections.length > 0) {
+    const currentPosition = event.selections[0].active;
+    if (
+      currentPosition &&
+      previousPositions.length > 0 &&
+      !currentPosition.isEqual(previousPositions[previousPositions.length - 1])
+    ) {
+      const previousPosition = previousPositions[previousPositions.length - 1];
+      const line = editor.document.lineAt(previousPosition.line);
+      highlightLine(editor, line);
+      previousPositions.push(currentPosition);
+    } else {
+      previousPositions = [currentPosition];
+    }
+  }
+};
+
+const setupListeners = (editor: vscode.TextEditor) => {
+  vscode.window.onDidChangeTextEditorSelection((event) => {
+    highlighter(editor, event);
+  });
+};
+
+const highlightLine = (editor: vscode.TextEditor, line: vscode.TextLine) => {
   if (decorationType) {
     editor.setDecorations(decorationType, []);
   }
@@ -74,6 +95,6 @@ function highlightLine(editor: vscode.TextEditor, line: vscode.TextLine) {
 
   editor.setDecorations(decorationType, [range]);
   editor.setDecorations(minimapDecorationType, [range]);
-}
+};
 
 export function deactivate() {}

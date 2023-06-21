@@ -4,7 +4,7 @@
   "repository": "https://github.com/MingyuJeon/lastPointer.git",
   "displayName": "Last Pointer",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.79.0"
   },
@@ -12,7 +12,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartup",
+    "onStartupFinished",
     "onCommand:last-pointer.highlightPreviousPosition"
   ],
   "main": "./dist/extension.js",
