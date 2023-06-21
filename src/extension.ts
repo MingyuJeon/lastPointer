@@ -1,28 +1,79 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log('Congratulations, your extension "last-pointer" is now active!');
+let previousPositions: vscode.Position[] = [];
+let decorationType: vscode.TextEditorDecorationType | undefined;
+let minimapDecorationType: vscode.TextEditorDecorationType | undefined;
 
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
+export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
-    "last-pointer.helloWorld",
+    "last-pointer.highlightPreviousPosition",
     () => {
-      // The code you place here will be executed every time your command is executed
-      // Display a message box to the user
-      vscode.window.showInformationMessage("Hello World from last-pointer!");
+      const editor = vscode.window.activeTextEditor;
+      if (editor) {
+        if (previousPositions.length > 0) {
+          const previousPosition =
+            previousPositions[previousPositions.length - 1];
+          const line = editor.document.lineAt(previousPosition.line);
+          editor.revealRange(line.range, vscode.TextEditorRevealType.InCenter);
+          vscode.window.showTextDocument(editor.document);
+          highlightLine(editor, line);
+        }
+      }
     }
   );
 
-  context.subscriptions.push(disposable);
+  const onDidChangeTextEditorSelectionDisposable =
+    vscode.window.onDidChangeTextEditorSelection((event) => {
+      const editor = event.textEditor;
+      if (editor && event.selections.length > 0) {
+        const currentPosition = event.selections[0].active;
+        if (
+          currentPosition &&
+          previousPositions.length > 0 &&
+          !currentPosition.isEqual(
+            previousPositions[previousPositions.length - 1]
+          )
+        ) {
+          const previousPosition =
+            previousPositions[previousPositions.length - 1];
+          const line = editor.document.lineAt(previousPosition.line);
+          highlightLine(editor, line);
+          previousPositions.push(currentPosition);
+        } else {
+          previousPositions = [currentPosition];
+        }
+      }
+    });
+
+  context.subscriptions.push(
+    disposable,
+    onDidChangeTextEditorSelectionDisposable
+  );
 }
 
-// This method is called when your extension is deactivated
+function highlightLine(editor: vscode.TextEditor, line: vscode.TextLine) {
+  if (decorationType) {
+    editor.setDecorations(decorationType, []);
+  }
+
+  if (minimapDecorationType) {
+    editor.setDecorations(minimapDecorationType, []);
+  }
+
+  decorationType = vscode.window.createTextEditorDecorationType({
+    isWholeLine: true,
+    backgroundColor: "blue",
+  });
+
+  minimapDecorationType = vscode.window.createTextEditorDecorationType({
+    overviewRulerColor: "blue",
+    overviewRulerLane: vscode.OverviewRulerLane.Right,
+  });
+
+  const range = line.range;
+
+  editor.setDecorations(decorationType, [range]);
+  editor.setDecorations(minimapDecorationType, [range]);
+}
+
 export function deactivate() {}

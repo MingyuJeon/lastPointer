@@ -1,6 +1,8 @@
 {
   "name": "last-pointer",
-  "displayName": "last-pointer",
+  "publisher": "Min-gyu Jeon",
+  "repository": "https://github.com/MingyuJeon/lastPointer.git",
+  "displayName": "Last Pointer",
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -9,13 +11,16 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartup",
+    "onCommand:last-pointer.highlightPreviousPosition"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "last-pointer.helloWorld",
-        "title": "Hello World"
+        "command": "last-pointer.highlightPreviousPosition",
+        "title": "lastpointer"
       }
     ]
   },
