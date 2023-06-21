@@ -6,16 +6,10 @@ let minimapDecorationType: vscode.TextEditorDecorationType | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
   if (vscode.window.activeTextEditor) {
-    setupListeners(vscode.window.activeTextEditor);
+    vscode.window.visibleTextEditors.forEach((editor) => {
+      setupListeners(editor);
+    });
   }
-
-  context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor((editor) => {
-      if (editor) {
-        setupListeners(editor);
-      }
-    })
-  );
 
   let disposable = vscode.commands.registerCommand(
     "last-pointer.highlightPreviousPosition",
@@ -40,6 +34,11 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
   context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) {
+        setupListeners(editor);
+      }
+    }),
     disposable,
     onDidChangeTextEditorSelectionDisposable
   );
